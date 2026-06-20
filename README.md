@@ -1,200 +1,284 @@
-# StellarPredict — Prediction Markets on Stellar
+# StellarPredict
 
-Decentralized prediction market platform built on the Stellar network using Soroban smart contracts.
+**Predict the future on Stellar — decentralized prediction markets powered by Soroban smart contracts.**
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-stellar--predict.chatterjeerupak588.workers.dev-14b8a6?style=for-the-badge)](https://stellar-predict.chatterjeerupak588.workers.dev)
+[![Network](https://img.shields.io/badge/Network-Stellar%20Testnet-7c3aed?style=for-the-badge)](https://stellar.org)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+
+---
+
+## Live App
+
+**Try it now:** [https://stellar-predict.chatterjeerupak588.workers.dev](https://stellar-predict.chatterjeerupak588.workers.dev)
+
+Connect your [Freighter](https://www.freighter.app/) wallet (set to **Testnet**), fund it via [Friendbot](https://friendbot.stellar.org/), and start creating or trading in prediction markets.
+
+| Resource | Link |
+|----------|------|
+| Live App | [stellar-predict.chatterjeerupak588.workers.dev](https://stellar-predict.chatterjeerupak588.workers.dev) |
+| Smart Contract | [View on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CDOTOFALVP7MIH35P3CK6I3W6PEZPO4K6DJJLU2XPCSALENFYRPCUVAD) |
+| Soroban RPC | `https://soroban-testnet.stellar.org` |
+
+---
+
+## Overview
+
+StellarPredict is a full-stack Web3 prediction market platform where users can:
+
+- **Create markets** with a question, description, and expiry date
+- **Bet YES or NO** using native XLM on Stellar Testnet
+- **Track odds** with live pool statistics and probability bars
+- **Resolve markets** and **claim rewards** after expiry
+- **Monitor activity** and on-chain transaction history
+
+All market logic lives on-chain in a Soroban smart contract. The frontend is a static Next.js app deployed to Cloudflare Workers.
+
+---
+
+## Screenshots
+
+### Home — Hero & Platform Stats
+
+![Home page](docs/screenshots/home.png)
+
+Landing page with live platform stats, quick navigation, and Freighter wallet connection.
+
+---
+
+### Markets — Browse & Create
+
+![Markets page](docs/screenshots/markets.png)
+
+Browse open and resolved markets, search by keyword, filter by status, and create new prediction markets.
+
+---
+
+### Market Detail — Place Bets
+
+![Market detail page](docs/screenshots/market-detail.png)
+
+View pool breakdown, YES/NO odds, your position, and place bets directly through Freighter.
+
+---
+
+### Dashboard — Wallet & Analytics
+
+![Dashboard page](docs/screenshots/dashboard.png)
+
+Wallet overview, platform analytics, and personal prediction history with wins, losses, and total staked.
+
+---
+
+### Activity — On-Chain Events
+
+![Activity feed](docs/screenshots/activity.png)
+
+Real-time stream of contract events: market creation, bets placed, resolutions, and reward claims.
+
+---
+
+### Transactions — Full History
+
+![Transactions page](docs/screenshots/transactions.png)
+
+Filterable transaction log with status badges, timestamps, and links to Stellar Explorer.
+
+---
 
 ## Features
 
-### 🔐 Freighter Wallet Integration
-- Connect with the Freighter browser extension (direct extension popup — no modal)
-- Wallet connection status indicator
-- Address display with copy + explorer link
-- Disconnect option
+| Feature | Description |
+|---------|-------------|
+| Freighter Wallet | One-click connect via `requestAccess()` with session restore |
+| Create Markets | On-chain market creation with XLM token support |
+| Place Bets | YES/NO predictions with live odds and pool tracking |
+| Resolve & Claim | Market creators resolve outcomes; winners claim rewards |
+| Analytics Dashboard | Total markets, volume, active markets, and user stats |
+| Activity Feed | Polls Soroban events every 10 seconds |
+| Transaction History | Pending / Success / Failed status with explorer links |
+| Dark Mode | Toggle between light and dark themes |
+| Error Handling | Clear messages for missing wallet, rejected txs, and low balance |
 
-### 📊 Prediction Markets
-- View all active prediction markets
-- Create markets with question, description, end date, and token selection
-- Market details page with pool stats, probabilities, and participant count
-- Current odds/probabilities (YES vs NO percentage bar)
-
-### 🎯 Place Predictions
-- Predict YES or NO on any open market
-- Enter stake amount in XLM
-- Submit prediction through deployed Soroban smart contract
-- Contract stores prediction data on-chain
-
-### ⚡ Real-Time Updates
-- Live activity feed of contract events (MarketCreated, BetPlaced, MarketResolved, RewardClaimed)
-- Auto-refresh every 10 seconds
-- Event-driven state synchronization
-
-### 📜 Smart Contract Integration
-- Read active markets from contract
-- Write predictions to contract
-- Fetch market statistics from contract
-- Display deployed contract address
-
-### 🚦 Transaction Tracking
-- Transaction status modal (Pending / Success / Failed)
-- Filterable transaction history
-- Transaction hash display
-- Link to Stellar Explorer
-- Timestamp tracking
-
-### ❌ Error Handling (3 Required)
-- **Freighter not installed** — Detects missing extension and shows clear message
-- **Transaction rejected by user** — Catches user rejection in Freighter popup
-- **Insufficient XLM balance** — Checks Horizon balance before submitting
-
-### 📈 Analytics Dashboard
-- Total markets created
-- Total predictions made
-- Total XLM volume
-- Most active market
-- User prediction history (wins/losses, total staked)
-
-### 👤 User Profile
-- Connected wallet information
-- Prediction history table
-- Win/Loss statistics
-- Total amount staked
+---
 
 ## Tech Stack
 
-- **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS, shadcn/ui
-- **State:** Zustand, TanStack React Query
-- **Blockchain:** Stellar Soroban, `@stellar/stellar-sdk`, `@creit.tech/stellar-wallets-kit`
-- **Smart Contract:** Rust + Soroban SDK
+| Layer | Technology |
+|-------|------------|
+| Frontend | Next.js 15, React 19, Tailwind CSS, shadcn/ui |
+| State | Zustand, TanStack React Query |
+| Wallet | `@stellar/freighter-api` |
+| Blockchain | Stellar Soroban, `@stellar/stellar-sdk` |
+| Smart Contract | Rust + Soroban SDK |
+| Deployment | Cloudflare Workers Static Assets, Wrangler |
 
-## Prerequisites
+---
 
-- Node.js 22+
-- npm or pnpm
-- [Rust/Cargo](https://rustup.rs/) (for smart contract compilation)
-- A Stellar wallet (Freighter, xBull, or Albedo)
+## Smart Contract
+
+Deployed on **Stellar Testnet**:
+
+```
+CDOTOFALVP7MIH35P3CK6I3W6PEZPO4K6DJJLU2XPCSALENFYRPCUVAD
+```
+
+| Method | Description |
+|--------|-------------|
+| `create_market` | Create a new prediction market |
+| `place_bet` | Place a YES/NO bet with XLM transfer |
+| `get_market` | Fetch a single market by ID |
+| `get_all_markets` | Fetch all markets |
+| `resolve_market` | Creator resolves an expired market |
+| `claim_reward` | Claim winnings from a resolved market |
+| `get_user_position` | Get a user's YES/NO shares for a market |
+
+Contract source: [`contracts/lib.rs`](contracts/lib.rs)
+
+---
 
 ## Getting Started
 
-### 1. Install Dependencies
+### Prerequisites
+
+- Node.js 22.13+
+- npm
+- [Freighter](https://www.freighter.app/) browser extension (Testnet mode)
+- [Rust/Cargo](https://rustup.rs/) (only if compiling the contract yourself)
+
+### 1. Clone & Install
 
 ```bash
+git clone https://github.com/LIGHT-25/Prediction-Market-Platform.git
+cd Prediction-Market-Platform
 npm install
 ```
 
-### 2. Set Up Environment
+### 2. Environment Setup
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` with your contract ID after deployment.
+The default `.env.example` includes the deployed testnet contract ID. Edit if you deploy your own.
 
-### 3. Compile & Deploy Smart Contract
-
-```bash
-npm run deploy
-```
-
-This will:
-1. Compile the Soroban contract with Cargo
-2. Fund a deployer keypair via Friendbot
-3. Upload the WASM bytecode and instantiate the contract
-4. Update `.env` with the deployed contract address
-
-### 4. Run the Development Server
+### 3. Run Locally
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
-### 5. Fund Your Wallet
+### 4. Fund Your Wallet
 
-Use the [Stellar Friendbot](https://friendbot.stellar.org/) to fund your Testnet wallet:
+Visit Friendbot with your public key:
 
 ```
 https://friendbot.stellar.org/?addr=YOUR_PUBLIC_KEY
 ```
 
-## Manual Deployment Steps (without cargo)
+---
 
-If Cargo is not available, compile the contract separately:
+## Deploy Smart Contract (Optional)
 
-```bash
-cd contracts
-cargo build --target wasm32-unknown-unknown --release
-```
-
-Then run the deploy script:
+To deploy your own contract instance:
 
 ```bash
 npx tsx scripts/deploy.ts
 ```
 
-## Smart Contract
+This compiles the Soroban contract, funds a deployer via Friendbot, uploads WASM, instantiates the contract, and writes `NEXT_PUBLIC_CONTRACT_ID` to `.env`.
 
-The smart contract is located in `contracts/` and provides:
+---
 
-| Method | Description |
-|--------|-------------|
-| `create_market` | Create a new prediction market |
-| `place_bet` | Place a YES/NO bet with token transfer |
-| `get_market` | Fetch a single market |
-| `get_all_markets` | Fetch all markets |
-| `resolve_market` | Creator resolves an expired market |
-| `claim_reward` | Claim winnings from a resolved market |
-| `get_user_position` | Get user's YES/NO shares |
+## Deploy Frontend (Cloudflare Workers)
+
+The app uses Next.js static export (`output: "export"`) and deploys to Cloudflare Workers Static Assets.
+
+```bash
+npm run build
+npm run deploy
+```
+
+Build settings for CI:
+
+| Setting | Value |
+|---------|-------|
+| Build command | `npm run build` |
+| Deploy command | `npx wrangler deploy` |
+| Node version | `22.13.0` |
+| Output directory | `out` (via `wrangler.jsonc`) |
+
+Environment variables (`NEXT_PUBLIC_*`) are baked in at build time. See [`.env.production`](.env.production) for the production defaults.
+
+---
 
 ## Project Structure
 
 ```
 ├── app/                    # Next.js App Router pages
-│   ├── page.tsx            # Home page with hero + active markets
-│   ├── dashboard/          # Wallet dashboard with balance
+│   ├── page.tsx            # Home — hero + stats
+│   ├── dashboard/          # Wallet + analytics
 │   ├── markets/            # Market list + create form
-│   ├── markets/[id]/       # Market detail with bet/resolve/claim
+│   ├── markets/detail/     # Market detail + bet/resolve/claim
 │   ├── activity/           # Contract events stream
 │   └── transactions/       # Transaction history
-├── components/             # Reusable UI components
-│   ├── Navbar.tsx          # Navigation + wallet connect
-│   ├── Providers.tsx       # React Query + dark mode
-│   ├── Toast.tsx           # Toast notifications
-│   └── ui/                 # shadcn/ui components
-├── contracts/              # Soroban smart contract
-│   ├── Cargo.toml
-│   └── lib.rs
-├── hooks/                  # React Query hooks
-│   ├── useMarkets.ts
-│   ├── useCreateMarket.ts
-│   ├── usePlaceBet.ts
-│   ├── useResolveMarket.ts
-│   └── useClaimReward.ts
-├── lib/                    # Core libraries
-│   ├── config.ts           # Environment config
-│   ├── wallet.ts           # StellarWalletsKit integration
-│   ├── contract.ts         # Low-level Soroban calls
-│   ├── stellar.ts          # Frontend contract wrappers
-│   ├── walletStore.ts      # Wallet state (Zustand)
-│   ├── marketStore.ts      # Market state (Zustand)
-│   ├── transactionStore.ts # Transaction history (Zustand)
-│   └── eventStore.ts       # Event polling state (Zustand)
-├── scripts/
-│   └── deploy.ts           # Contract deployment script
-└── types/
-    └── index.ts            # TypeScript definitions
+├── components/             # UI components (Navbar, Toast, TxModal)
+├── contracts/              # Soroban smart contract (Rust)
+├── hooks/                  # React Query hooks for contract calls
+├── lib/                    # Config, wallet, contract, stores
+├── scripts/                # Deployment & debug scripts
+├── docs/screenshots/       # README screenshots
+└── wrangler.jsonc          # Cloudflare Workers config
 ```
+
+---
+
+## How It Works
+
+```mermaid
+flowchart LR
+    A[User Browser] -->|Freighter Sign| B[Next.js Frontend]
+    B -->|Simulate & Submit| C[Soroban RPC]
+    C -->|Invoke| D[Prediction Market Contract]
+    D -->|Events| E[Horizon / RPC Events]
+    E -->|Poll| B
+    B -->|Static Assets| F[Cloudflare Workers]
+```
+
+1. User connects Freighter and approves the dApp
+2. Frontend builds Soroban transactions and prompts wallet signing
+3. Signed transactions are submitted to Soroban Testnet RPC
+4. Contract stores markets, bets, and positions on-chain
+5. Frontend polls events and updates UI in real time
+
+---
 
 ## Verification Checklist
 
-- [ ] Connect Freighter/xBull/Albedo wallet
-- [ ] Fund wallet via Friendbot
-- [ ] Create a market (verify toast + transaction history)
-- [ ] Buy YES/NO positions
+- [x] Connect Freighter wallet on deployed domain
+- [x] Create a prediction market
+- [x] Place YES/NO bets with XLM
+- [x] View dashboard analytics and wallet balance
+- [x] Track transactions with status badges
 - [ ] Resolve market after expiration
-- [ ] Claim reward
-- [ ] View activity feed with live events
-- [ ] Check transaction history with status badges
+- [ ] Claim reward from resolved market
+
+---
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE) for details.
+
+---
+
+<p align="center">
+  Built with Stellar & Soroban · Deployed on Cloudflare Workers
+  <br />
+  <a href="https://stellar-predict.chatterjeerupak588.workers.dev">Launch App</a>
+  ·
+  <a href="https://stellar.expert/explorer/testnet">Explorer</a>
+  ·
+  <a href="https://developers.stellar.org/docs/build/smart-contracts">Soroban Docs</a>
+</p>
