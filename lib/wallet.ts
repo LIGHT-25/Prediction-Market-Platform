@@ -1,5 +1,7 @@
 import {
   isConnected as freighterIsConnected,
+  isAllowed as freighterIsAllowed,
+  requestAccess as freighterRequestAccess,
   getAddress as freighterGetAddress,
   getNetwork as freighterGetNetwork,
   signTransaction as freighterSignTransaction,
@@ -24,8 +26,8 @@ function assertBrowser() {
 export async function checkFreighterInstalled(): Promise<boolean> {
   if (typeof window === "undefined") return false;
   try {
-    const { isConnected: connected } = await freighterIsConnected();
-    return !!connected;
+    const { isConnected: freighterAvailable } = await freighterIsConnected();
+    return !!freighterAvailable;
   } catch {
     return false;
   }
@@ -35,7 +37,18 @@ export async function connectWallet(): Promise<{ address: string }> {
   assertBrowser();
 
   try {
-    const { address } = await freighterGetAddress();
+    const { isConnected: freighterAvailable } = await freighterIsConnected();
+    if (!freighterAvailable) {
+      throw new FreighterError(
+        "Freighter wallet not installed. Please install the Freighter browser extension.",
+        "WALLET_NOT_FOUND"
+      );
+    }
+
+    const { address, error } = await freighterRequestAccess();
+    if (error) {
+      throw mapFreighterApiError(error);
+    }
     if (!address) {
       throw new FreighterError("No address returned from Freighter", "NO_ADDRESS");
     }
@@ -53,8 +66,15 @@ export async function disconnectWallet(): Promise<void> {
 export async function getConnectedAddress(): Promise<string | null> {
   if (typeof window === "undefined") return null;
   try {
-    const { address } = await freighterGetAddress();
-    return address || null;
+    const { isConnected: freighterAvailable } = await freighterIsConnected();
+    if (!freighterAvailable) return null;
+
+    const { isAllowed } = await freighterIsAllowed();
+    if (!isAllowed) return null;
+
+    const { address, error } = await freighterGetAddress();
+    if (error || !address) return null;
+    return address;
   } catch {
     return null;
   }
@@ -83,6 +103,14 @@ export async function signTx(xdr: string, userAddress: string): Promise<string> 
     if (error instanceof FreighterError) throw error;
     throw mapFreighterError(error, "SIGN_FAILED");
   }
+}
+
+function mapFreighterApiError(error: { code?: number; message: string }): FreighterError {
+  const msg = error.message || "Freighter request failed";
+  if (msg.includes("reject") || msg.includes("denied") || msg.includes("cancel")) {
+    return new FreighterError("Request rejected by user", "USER_REJECTED");
+  }
+  return new FreighterError(msg, String(error.code || "FREIGHTER_ERROR"));
 }
 
 function mapFreighterError(error: unknown, fallbackCode: string): FreighterError {

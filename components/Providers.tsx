@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { useWalletStore } from "@/lib/walletStore";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -25,6 +26,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       document.documentElement.classList.add("dark");
       localStorage.setItem("theme", "dark");
     }
+  }, []);
+
+  // Restore wallet session when the user already authorized this site.
+  useEffect(() => {
+    useWalletStore.getState().checkConnection();
   }, []);
 
   return (
