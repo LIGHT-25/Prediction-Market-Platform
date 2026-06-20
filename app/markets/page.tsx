@@ -259,7 +259,7 @@ export default function MarketsPage() {
             return (
               <Link
                 key={market.id}
-                href={`/markets/${market.id}`}
+                href={`/markets/detail?id=${market.id}`}
                 className="rounded-xl border border-border/50 bg-card p-5 card-hover group"
               >
                 <div className="flex items-start justify-between mb-3">

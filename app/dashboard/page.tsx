@@ -187,7 +187,7 @@ export default function Dashboard() {
           <div className="mt-3 p-3 rounded-lg bg-muted/50 text-sm">
             <span className="text-muted-foreground">Most Active: </span>
             <Link
-              href={`/markets/${analytics.mostActiveMarket.id}`}
+              href={`/markets/detail?id=${analytics.mostActiveMarket.id}`}
               className="text-primary hover:underline"
             >
               {analytics.mostActiveMarket.question.substring(0, 60)}
@@ -239,7 +239,7 @@ export default function Dashboard() {
             {predictions.map((p, i) => (
               <Link
                 key={`${p.marketId}-${p.isYes}-${i}`}
-                href={`/markets/${p.marketId}`}
+                href={`/markets/detail?id=${p.marketId}`}
                 className="flex items-center justify-between p-3 rounded-lg border border-border/30 hover:bg-muted transition-colors"
               >
                 <div className="min-w-0 flex-1">
@@ -421,7 +421,7 @@ export default function Dashboard() {
             {myMarkets.map((market) => (
               <Link
                 key={market.id}
-                href={`/markets/${market.id}`}
+                href={`/markets/detail?id=${market.id}`}
                 className="flex items-center justify-between p-3 rounded-lg border border-border/30 hover:bg-muted transition-colors"
               >
                 <div className="min-w-0 flex-1">
