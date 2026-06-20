@@ -44,3 +44,4 @@ export const useMarketStore = create<MarketState>((set) => ({
 
   setError: (error) => set({ error }),
 }));
+
