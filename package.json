@@ -8,6 +8,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev",
     "start": "next start",
     "lint": "next lint"
   },
