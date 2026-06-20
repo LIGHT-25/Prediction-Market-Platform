@@ -44,3 +44,4 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
 
   clearTransactions: () => set({ transactions: [] }),
 }));
+
