@@ -67,7 +67,7 @@ Decentralized prediction market platform built on the Stellar network using Soro
 
 ## Prerequisites
 
-- Node.js 18+
+- Node.js 22+
 - npm or pnpm
 - [Rust/Cargo](https://rustup.rs/) (for smart contract compilation)
 - A Stellar wallet (Freighter, xBull, or Albedo)
