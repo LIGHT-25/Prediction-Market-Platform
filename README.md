@@ -269,16 +269,5 @@ flowchart LR
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
+yet to be added
 
----
-
-<p align="center">
-  Built with Stellar & Soroban · Deployed on Cloudflare Workers
-  <br />
-  <a href="https://stellar-predict.chatterjeerupak588.workers.dev">Launch App</a>
-  ·
-  <a href="https://stellar.expert/explorer/testnet">Explorer</a>
-  ·
-  <a href="https://developers.stellar.org/docs/build/smart-contracts">Soroban Docs</a>
-</p>
