@@ -84,6 +84,11 @@ Real-time stream of contract events: market creation, bets placed, resolutions, 
 
 Filterable transaction log with status badges, timestamps, and links to Stellar Explorer.
 
+### Stellar Expert Ledger ###
+<img width="1365" height="733" alt="image" src="https://github.com/user-attachments/assets/843f7168-7c9f-4d8e-b826-da333c177b07" />
+
+
+
 ---
 
 ## Features
