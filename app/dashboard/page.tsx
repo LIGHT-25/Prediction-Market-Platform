@@ -23,6 +23,8 @@ import { EXPLORER_URL } from "@/lib/config";
 import { getAnalytics, getUserPredictionHistory } from "@/lib/stellar";
 import type { AnalyticsData, UserPrediction } from "@/types";
 import Link from "next/link";
+import { StatCardSkeleton, ActivityRowSkeleton } from "@/components/skeletons";
+import { Spinner } from "@/components/Spinner";
 
 export default function Dashboard() {
   const { address, isConnected, balance, isLoading, connect, fetchBalance } =
@@ -151,48 +153,56 @@ export default function Dashboard() {
         <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
           <TrendingUp className="w-4 h-4" /> Platform Analytics
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="p-3 rounded-lg bg-sky-500/10">
-            <div className="flex items-center gap-2 mb-1">
-              <BarChart3 className="w-4 h-4 text-sky-400" />
-              <span className="text-xs text-muted-foreground">Total Markets</span>
+        {!analytics ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => <StatCardSkeleton key={i} />)}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-3 rounded-lg bg-sky-500/10">
+                <div className="flex items-center gap-2 mb-1">
+                  <BarChart3 className="w-4 h-4 text-sky-400" />
+                  <span className="text-xs text-muted-foreground">Total Markets</span>
+                </div>
+                <p className="text-xl font-bold">{analytics?.totalMarkets || markets?.length || 0}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-violet-500/10">
+                <div className="flex items-center gap-2 mb-1">
+                  <Activity className="w-4 h-4 text-violet-400" />
+                  <span className="text-xs text-muted-foreground">Predictions</span>
+                </div>
+                <p className="text-xl font-bold">{analytics?.totalPredictions || 0}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-emerald-500/10">
+                <div className="flex items-center gap-2 mb-1">
+                  <Trophy className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs text-muted-foreground">Total Volume</span>
+                </div>
+                <p className="text-xl font-bold">{analytics?.totalVolumeXLM.toFixed(2) || "0"} XLM</p>
+              </div>
+              <div className="p-3 rounded-lg bg-amber-500/10">
+                <div className="flex items-center gap-2 mb-1">
+                  <Users className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs text-muted-foreground">Active Markets</span>
+                </div>
+                <p className="text-xl font-bold">
+                  {markets?.filter((m) => !m.resolved).length || 0}
+                </p>
+              </div>
             </div>
-            <p className="text-xl font-bold">{analytics?.totalMarkets || markets?.length || 0}</p>
-          </div>
-          <div className="p-3 rounded-lg bg-violet-500/10">
-            <div className="flex items-center gap-2 mb-1">
-              <Activity className="w-4 h-4 text-violet-400" />
-              <span className="text-xs text-muted-foreground">Predictions</span>
-            </div>
-            <p className="text-xl font-bold">{analytics?.totalPredictions || 0}</p>
-          </div>
-          <div className="p-3 rounded-lg bg-emerald-500/10">
-            <div className="flex items-center gap-2 mb-1">
-              <Trophy className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs text-muted-foreground">Total Volume</span>
-            </div>
-            <p className="text-xl font-bold">{analytics?.totalVolumeXLM.toFixed(2) || "0"} XLM</p>
-          </div>
-          <div className="p-3 rounded-lg bg-amber-500/10">
-            <div className="flex items-center gap-2 mb-1">
-              <Users className="w-4 h-4 text-amber-400" />
-              <span className="text-xs text-muted-foreground">Active Markets</span>
-            </div>
-            <p className="text-xl font-bold">
-              {markets?.filter((m) => !m.resolved).length || 0}
-            </p>
-          </div>
-        </div>
-        {analytics?.mostActiveMarket && (
-          <div className="mt-3 p-3 rounded-lg bg-muted/50 text-sm">
-            <span className="text-muted-foreground">Most Active: </span>
-            <Link
-              href={`/markets/detail?id=${analytics.mostActiveMarket.id}`}
-              className="text-primary hover:underline"
-            >
-              {analytics.mostActiveMarket.question.substring(0, 60)}
-            </Link>
-          </div>
+            {analytics?.mostActiveMarket && (
+              <div className="mt-3 p-3 rounded-lg bg-muted/50 text-sm">
+                <span className="text-muted-foreground">Most Active: </span>
+                <Link
+                  href={`/markets/detail?id=${analytics.mostActiveMarket.id}`}
+                  className="text-primary hover:underline"
+                >
+                  {analytics.mostActiveMarket.question.substring(0, 60)}
+                </Link>
+              </div>
+            )}
+          </>
         )}
       </section>
 
@@ -205,9 +215,9 @@ export default function Dashboard() {
           <button
             onClick={loadPredictions}
             disabled={predLoading}
-            className="text-xs text-primary hover:underline flex items-center gap-1"
+            className="text-xs text-primary hover:underline flex items-center gap-1 disabled:opacity-50"
           >
-            <RefreshCw className={`w-3 h-3 ${predLoading ? "animate-spin" : ""}`} />
+            {predLoading ? <Spinner size="sm" /> : <RefreshCw className="w-3 h-3" />}
             Refresh
           </button>
         </div>
@@ -231,9 +241,17 @@ export default function Dashboard() {
         )}
 
         {predictions.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">
-            {predLoading ? "Loading..." : "No predictions yet. Go to Markets to place your first bet!"}
-          </p>
+          <div className="py-4">
+            {predLoading ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => <ActivityRowSkeleton key={i} />)}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center">
+                No predictions yet. Go to Markets to place your first bet!
+              </p>
+            )}
+          </div>
         ) : (
           <div className="space-y-2 max-h-80 overflow-y-auto">
             {predictions.map((p, i) => (
