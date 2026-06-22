@@ -407,12 +407,18 @@ mod tests {
     #[contractimpl]
     impl TestOracle {
         pub fn init(env: Env, admin: Address) {
-            env.storage().instance().set(&Symbol::new(&env, "admin"), &admin);
+            env.storage()
+                .instance()
+                .set(&Symbol::new(&env, "admin"), &admin);
         }
 
         pub fn set_price(env: Env, caller: Address, asset: Symbol, price: i128) {
             caller.require_auth();
-            let admin: Address = env.storage().instance().get(&Symbol::new(&env, "admin")).unwrap();
+            let admin: Address = env
+                .storage()
+                .instance()
+                .get(&Symbol::new(&env, "admin"))
+                .unwrap();
             if caller != admin {
                 panic!("unauthorized");
             }
@@ -732,39 +738,36 @@ mod tests {
         let asset2 = Symbol::new(&env, "BTC");
         let asset3 = Symbol::new(&env, "ETH");
 
-        let id1 = client
-            .create_market_with_oracle(
-                &creator,
-                &String::from_str(&env, "Q1"),
-                &String::from_str(&env, "D"),
-                &1000,
-                &token_client.address,
-                &oracle1,
-                &asset1,
-                &500,
-            );
-        let id2 = client
-            .create_market_with_oracle(
-                &creator,
-                &String::from_str(&env, "Q2"),
-                &String::from_str(&env, "D"),
-                &1000,
-                &token_client.address,
-                &oracle2,
-                &asset2,
-                &60000,
-            );
-        let id3 = client
-            .create_market_with_oracle(
-                &creator,
-                &String::from_str(&env, "Q3"),
-                &String::from_str(&env, "D"),
-                &1000,
-                &token_client.address,
-                &oracle3,
-                &asset3,
-                &3500,
-            );
+        let id1 = client.create_market_with_oracle(
+            &creator,
+            &String::from_str(&env, "Q1"),
+            &String::from_str(&env, "D"),
+            &1000,
+            &token_client.address,
+            &oracle1,
+            &asset1,
+            &500,
+        );
+        let id2 = client.create_market_with_oracle(
+            &creator,
+            &String::from_str(&env, "Q2"),
+            &String::from_str(&env, "D"),
+            &1000,
+            &token_client.address,
+            &oracle2,
+            &asset2,
+            &60000,
+        );
+        let id3 = client.create_market_with_oracle(
+            &creator,
+            &String::from_str(&env, "Q3"),
+            &String::from_str(&env, "D"),
+            &1000,
+            &token_client.address,
+            &oracle3,
+            &asset3,
+            &3500,
+        );
 
         let m1 = client.get_market(&id1).unwrap();
         assert_eq!(m1.oracle_id, Some(oracle1));
@@ -795,17 +798,16 @@ mod tests {
         let asset = Symbol::new(&env, "XLM");
         oracle_client.set_price(&admin, &asset, &600);
 
-        let id = client
-            .create_market_with_oracle(
-                &creator,
-                &String::from_str(&env, "Q"),
-                &String::from_str(&env, "D"),
-                &1000,
-                &token_client.address,
-                &oracle_id,
-                &asset,
-                &500,
-            );
+        let id = client.create_market_with_oracle(
+            &creator,
+            &String::from_str(&env, "Q"),
+            &String::from_str(&env, "D"),
+            &1000,
+            &token_client.address,
+            &oracle_id,
+            &asset,
+            &500,
+        );
 
         env.ledger().set(LedgerInfo {
             timestamp: 1001,
@@ -838,17 +840,16 @@ mod tests {
         let asset = Symbol::new(&env, "XLM");
         oracle_client.set_price(&admin, &asset, &400);
 
-        let id = client
-            .create_market_with_oracle(
-                &creator,
-                &String::from_str(&env, "Q"),
-                &String::from_str(&env, "D"),
-                &1000,
-                &token_client.address,
-                &oracle_id,
-                &asset,
-                &500,
-            );
+        let id = client.create_market_with_oracle(
+            &creator,
+            &String::from_str(&env, "Q"),
+            &String::from_str(&env, "D"),
+            &1000,
+            &token_client.address,
+            &oracle_id,
+            &asset,
+            &500,
+        );
 
         env.ledger().set(LedgerInfo {
             timestamp: 1001,
