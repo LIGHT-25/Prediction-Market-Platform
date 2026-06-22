@@ -649,7 +649,7 @@ mod tests {
         });
         client.resolve_market(&id, &true);
 
-        client.claim_reward(&id, &user.clone());
+        client.claim_reward(&id, &user);
         client.claim_reward(&id, &user);
     }
 
@@ -685,7 +685,7 @@ mod tests {
         });
         client.resolve_market(&id, &true);
 
-        client.claim_reward(&id, &user_yes.clone());
+        client.claim_reward(&id, &user_yes);
         assert_eq!(token_client.balance(&user_yes), 700 + 1000);
     }
 
