@@ -11,6 +11,7 @@ import type {
   MarketData,
   UserPositionData,
   CreateMarketParams,
+  CreateMarketWithOracleParams,
   PlaceBetParams,
   AnalyticsData,
   UserPrediction,
@@ -35,6 +36,46 @@ export async function createMarket(
   );
 
   return { marketId: result as number, txHash };
+}
+
+export async function createMarketWithOracle(
+  callerAddress: string,
+  params: CreateMarketWithOracleParams
+): Promise<{ marketId: number; txHash: string }> {
+  const args: xdr.ScVal[] = [
+    new Address(callerAddress).toScVal(),
+    nativeToScVal(params.question, { type: "string" }),
+    nativeToScVal(params.description, { type: "string" }),
+    nativeToScVal(params.expirationDate, { type: "u64" }),
+    new Address(params.token || NATIVE_TOKEN_ADDRESS).toScVal(),
+    new Address(params.oracleContractId).toScVal(),
+    nativeToScVal(params.oracleAsset, { type: "symbol" }),
+    nativeToScVal(BigInt(params.resolutionPriceThreshold), { type: "i128" }),
+  ];
+
+  const { result, txHash } = await invokeContract(
+    "create_market_with_oracle",
+    args,
+    callerAddress
+  );
+
+  return { marketId: result as number, txHash };
+}
+
+export async function autoResolveMarket(
+  callerAddress: string,
+  marketId: number
+): Promise<{ txHash: string }> {
+  const args: xdr.ScVal[] = [
+    nativeToScVal(marketId, { type: "u32" }),
+  ];
+
+  const { txHash } = await invokeContract(
+    "auto_resolve_market",
+    args,
+    callerAddress
+  );
+  return { txHash };
 }
 
 export async function placeBet(
@@ -220,5 +261,10 @@ function normalizeMarket(raw: any): MarketData {
     outcome: Boolean(raw.outcome),
     token: String(raw.token ?? ""),
     participants: Number(raw.participants ?? 0),
+    oracle_id: raw.oracle_id ? String(raw.oracle_id) : undefined,
+    oracle_asset: raw.oracle_asset ? String(raw.oracle_asset) : undefined,
+    resolution_price_threshold: raw.resolution_price_threshold
+      ? String(raw.resolution_price_threshold)
+      : undefined,
   };
 }
