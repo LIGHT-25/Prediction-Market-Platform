@@ -9,16 +9,20 @@ import {
   Timer,
   CheckCircle2,
   X,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import { useMarkets } from "@/hooks/useMarkets";
 import { useCreateMarket } from "@/hooks/useCreateMarket";
 import { useWalletStore } from "@/lib/walletStore";
 import { useToast } from "@/components/Toast";
 import { NATIVE_TOKEN_ADDRESS } from "@/lib/config";
+import { MarketCardSkeleton } from "@/components/skeletons";
+import { Spinner } from "@/components/Spinner";
 
 export default function MarketsPage() {
   const { address, isConnected, connect } = useWalletStore();
-  const { data: markets, isLoading } = useMarkets();
+  const { data: markets, isLoading, isError, refetch } = useMarkets();
   const createMarket = useCreateMarket();
   const { toast } = useToast();
 
@@ -167,9 +171,13 @@ export default function MarketsPage() {
             <button
               type="submit"
               disabled={createMarket.isPending}
-              className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+              className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {createMarket.isPending ? "Creating..." : "Create Market"}
+              {createMarket.isPending ? (
+                <><Spinner size="sm" /> Creating...</>
+              ) : (
+                "Create Market"
+              )}
             </button>
           </form>
         </section>
@@ -205,17 +213,22 @@ export default function MarketsPage() {
       </div>
 
       {/* Markets Grid */}
-      {isLoading ? (
+      {isError ? (
+        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-10 text-center">
+          <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-3" />
+          <p className="font-medium mb-1">Failed to load markets</p>
+          <p className="text-sm text-muted-foreground mb-4">There was an error fetching markets from the blockchain.</p>
+          <button
+            onClick={() => refetch()}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 text-sm font-medium hover:bg-red-500/30 transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" /> Retry
+          </button>
+        </div>
+      ) : isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="rounded-xl border border-border/50 bg-card p-6 animate-pulse"
-            >
-              <div className="h-4 bg-muted rounded w-3/4 mb-3" />
-              <div className="h-3 bg-muted rounded w-1/2 mb-4" />
-              <div className="h-8 bg-muted rounded" />
-            </div>
+            <MarketCardSkeleton key={i} />
           ))}
         </div>
       ) : filteredMarkets.length === 0 ? (
