@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, contracterror, Address, Env, Symbol};
+use soroban_sdk::{contract, contracterror, contractimpl, contracttype, Address, Env, Symbol};
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -29,9 +29,14 @@ impl OracleContract {
         env.storage().instance().set(&DataKey::OracleAdmin, &admin);
     }
 
-    pub fn set_price(env: Env, caller: Address, asset: Symbol, price: i128) -> Result<(), OracleError> {
+    pub fn set_price(
+        env: Env,
+        caller: Address,
+        asset: Symbol,
+        price: i128,
+    ) -> Result<(), OracleError> {
         caller.require_auth();
-        
+
         let admin: Address = env
             .storage()
             .instance()
@@ -46,7 +51,9 @@ impl OracleContract {
             return Err(OracleError::InvalidPrice);
         }
 
-        env.storage().persistent().set(&DataKey::Price(asset.clone()), &price);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Price(asset.clone()), &price);
         Ok(())
     }
 

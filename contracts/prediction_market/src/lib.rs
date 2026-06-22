@@ -1,6 +1,6 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contractimpl, contracttype, contracterror, token, Address, Env, String, Symbol, Vec,
+    contract, contracterror, contractimpl, contracttype, token, Address, Env, String, Symbol, Vec,
 };
 
 #[contracterror]
@@ -71,7 +71,11 @@ impl PredictionMarketContract {
     ) -> u32 {
         creator.require_auth();
 
-        let mut count: u32 = env.storage().instance().get(&DataKey::MarketCount).unwrap_or(0);
+        let mut count: u32 = env
+            .storage()
+            .instance()
+            .get(&DataKey::MarketCount)
+            .unwrap_or(0);
         count += 1;
         env.storage().instance().set(&DataKey::MarketCount, &count);
 
@@ -92,7 +96,9 @@ impl PredictionMarketContract {
             resolution_price_threshold: None,
         };
 
-        env.storage().instance().set(&DataKey::Market(count), &market);
+        env.storage()
+            .instance()
+            .set(&DataKey::Market(count), &market);
 
         // Updated event structure: topic tuple of length 2, creator moved to data
         env.events().publish(
@@ -121,7 +127,11 @@ impl PredictionMarketContract {
             return Err(MarketError::InvalidOracle);
         }
 
-        let mut count: u32 = env.storage().instance().get(&DataKey::MarketCount).unwrap_or(0);
+        let mut count: u32 = env
+            .storage()
+            .instance()
+            .get(&DataKey::MarketCount)
+            .unwrap_or(0);
         count += 1;
         env.storage().instance().set(&DataKey::MarketCount, &count);
 
@@ -142,7 +152,9 @@ impl PredictionMarketContract {
             resolution_price_threshold: Some(resolution_price_threshold),
         };
 
-        env.storage().instance().set(&DataKey::Market(count), &market);
+        env.storage()
+            .instance()
+            .set(&DataKey::Market(count), &market);
 
         // Emit (Symbol("MarketCreated"), market_id) with data payload (creator, question, expiration_date, token)
         env.events().publish(
@@ -172,7 +184,9 @@ impl PredictionMarketContract {
 
         let oracle_id = market.oracle_id.clone().ok_or(MarketError::NoOracle)?;
         let oracle_asset = market.oracle_asset.clone().ok_or(MarketError::NoOracle)?;
-        let threshold = market.resolution_price_threshold.ok_or(MarketError::NoOracle)?;
+        let threshold = market
+            .resolution_price_threshold
+            .ok_or(MarketError::NoOracle)?;
 
         let client = OracleContractClient::new(&env, &oracle_id);
         let price_result = client.try_get_price(&oracle_asset);
@@ -195,13 +209,7 @@ impl PredictionMarketContract {
         Ok(())
     }
 
-    pub fn place_bet(
-        env: Env,
-        market_id: u32,
-        user: Address,
-        is_yes: bool,
-        amount: i128,
-    ) {
+    pub fn place_bet(env: Env, market_id: u32, user: Address, is_yes: bool, amount: i128) {
         user.require_auth();
 
         if amount <= 0 {
@@ -234,15 +242,15 @@ impl PredictionMarketContract {
         }
 
         let position_key = DataKey::UserPosition(market_id, user.clone());
-        let mut position: UserPosition = env
-            .storage()
-            .persistent()
-            .get(&position_key)
-            .unwrap_or(UserPosition {
-                yes_shares: 0,
-                no_shares: 0,
-                claimed: false,
-            });
+        let mut position: UserPosition =
+            env.storage()
+                .persistent()
+                .get(&position_key)
+                .unwrap_or(UserPosition {
+                    yes_shares: 0,
+                    no_shares: 0,
+                    claimed: false,
+                });
 
         if position.yes_shares == 0 && position.no_shares == 0 {
             market.participants += 1;
@@ -269,9 +277,17 @@ impl PredictionMarketContract {
 
     pub fn get_all_markets(env: Env) -> Vec<Market> {
         let mut markets = Vec::new(&env);
-        let count: u32 = env.storage().instance().get(&DataKey::MarketCount).unwrap_or(0);
+        let count: u32 = env
+            .storage()
+            .instance()
+            .get(&DataKey::MarketCount)
+            .unwrap_or(0);
         for i in 1..=count {
-            if let Some(market) = env.storage().instance().get::<_, Market>(&DataKey::Market(i)) {
+            if let Some(market) = env
+                .storage()
+                .instance()
+                .get::<_, Market>(&DataKey::Market(i))
+            {
                 markets.push_back(market);
             }
         }
@@ -367,51 +383,68 @@ impl PredictionMarketContract {
 
     pub fn get_user_position(env: Env, market_id: u32, user: Address) -> UserPosition {
         let position_key = DataKey::UserPosition(market_id, user);
-        env.storage().persistent().get(&position_key).unwrap_or(UserPosition {
-            yes_shares: 0,
-            no_shares: 0,
-            claimed: false,
-        })
+        env.storage()
+            .persistent()
+            .get(&position_key)
+            .unwrap_or(UserPosition {
+                yes_shares: 0,
+                no_shares: 0,
+                claimed: false,
+            })
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use oracle::OracleContract;
     use soroban_sdk::testutils::{Address as _, Ledger, LedgerInfo};
     use soroban_sdk::{token, Address, Env, String, Symbol};
-    use oracle::OracleContract;
 
-    fn setup_test<'a>() -> (Env, PredictionMarketContractClient<'a>, Address, Address, token::Client<'a>, token::StellarAssetContractClient<'a>) {
+    fn setup_test<'a>() -> (
+        Env,
+        PredictionMarketContractClient<'a>,
+        Address,
+        Address,
+        token::Client<'a>,
+        token::StellarAssetContractClient<'a>,
+    ) {
         let env = Env::default();
         env.mock_all_auths();
-        
+
         let contract_id = env.register_contract(None, PredictionMarketContract);
         let client = PredictionMarketContractClient::new(&env, &contract_id);
-        
+
         let creator = Address::generate(&env);
         let token_admin = Address::generate(&env);
         let token_address = env.register_stellar_asset_contract(token_admin.clone());
         let token_client = token::Client::new(&env, &token_address);
         let token_admin_client = token::StellarAssetContractClient::new(&env, &token_address);
-        
-        (env, client, contract_id, creator, token_client, token_admin_client)
+
+        (
+            env,
+            client,
+            contract_id,
+            creator,
+            token_client,
+            token_admin_client,
+        )
     }
 
     #[test]
     fn test_create_market() {
         let (env, client, _, creator, token_client, _) = setup_test();
-        
+
         let q = String::from_str(&env, "Will Stellar hit $1?");
         let d = String::from_str(&env, "Test question");
         let exp = 1000u64;
-        
+
         let id1 = client.create_market(&creator, &q, &d, &exp, &token_client.address);
         assert_eq!(id1, 1);
-        
+
         let id2 = client.create_market(&creator, &q, &d, &exp, &token_client.address);
         assert_eq!(id2, 2);
-        
+
         let market = client.get_market(&1).unwrap();
         assert_eq!(market.id, 1);
         assert_eq!(market.question, q);
@@ -420,29 +453,29 @@ mod tests {
     #[test]
     fn test_place_bet_accounting() {
         let (env, client, contract_address, creator, token_client, token_admin) = setup_test();
-        
+
         let user = Address::generate(&env);
         token_admin.mint(&user, &1000);
-        
+
         let q = String::from_str(&env, "Stellar $1?");
         let d = String::from_str(&env, "Desc");
         let exp = 1000u64;
         let id = client.create_market(&creator, &q, &d, &exp, &token_client.address);
-        
+
         // Before bet
         assert_eq!(token_client.balance(&user), 1000);
         assert_eq!(token_client.balance(&contract_address), 0);
-        
+
         client.place_bet(&id, &user, &true, &400);
-        
+
         // After bet
         assert_eq!(token_client.balance(&user), 600);
         assert_eq!(token_client.balance(&contract_address), 400);
-        
+
         let market = client.get_market(&id).unwrap();
         assert_eq!(market.total_yes_shares, 400);
         assert_eq!(market.total_no_shares, 0);
-        
+
         let pos = client.get_user_position(&id, &user);
         assert_eq!(pos.yes_shares, 400);
         assert_eq!(pos.no_shares, 0);
@@ -454,10 +487,16 @@ mod tests {
         let (env, client, _, creator, token_client, token_admin) = setup_test();
         let user = Address::generate(&env);
         token_admin.mint(&user, &1000);
-        
+
         let exp = 1000u64;
-        let id = client.create_market(&creator, &String::from_str(&env, "Q"), &String::from_str(&env, "D"), &exp, &token_client.address);
-        
+        let id = client.create_market(
+            &creator,
+            &String::from_str(&env, "Q"),
+            &String::from_str(&env, "D"),
+            &exp,
+            &token_client.address,
+        );
+
         // Set ledger timestamp past expiration date
         env.ledger().set(LedgerInfo {
             timestamp: 1001,
@@ -468,7 +507,7 @@ mod tests {
             min_temp_entry_ttl: 0,
             min_persistent_entry_ttl: 0,
         });
-        
+
         client.place_bet(&id, &user, &true, &100);
     }
 
@@ -478,10 +517,16 @@ mod tests {
         let (env, client, _, creator, token_client, token_admin) = setup_test();
         let user = Address::generate(&env);
         token_admin.mint(&user, &1000);
-        
+
         let exp = 1000u64;
-        let id = client.create_market(&creator, &String::from_str(&env, "Q"), &String::from_str(&env, "D"), &exp, &token_client.address);
-        
+        let id = client.create_market(
+            &creator,
+            &String::from_str(&env, "Q"),
+            &String::from_str(&env, "D"),
+            &exp,
+            &token_client.address,
+        );
+
         // Resolve market
         env.ledger().set(LedgerInfo {
             timestamp: 1001,
@@ -493,7 +538,7 @@ mod tests {
             min_persistent_entry_ttl: 0,
         });
         client.resolve_market(&id, &true);
-        
+
         client.place_bet(&id, &user, &true, &100);
     }
 
@@ -502,7 +547,13 @@ mod tests {
     fn test_place_bet_zero_amount() {
         let (env, client, _, creator, token_client, _) = setup_test();
         let user = Address::generate(&env);
-        let id = client.create_market(&creator, &String::from_str(&env, "Q"), &String::from_str(&env, "D"), &1000, &token_client.address);
+        let id = client.create_market(
+            &creator,
+            &String::from_str(&env, "Q"),
+            &String::from_str(&env, "D"),
+            &1000,
+            &token_client.address,
+        );
         client.place_bet(&id, &user, &true, &0);
     }
 
@@ -510,7 +561,13 @@ mod tests {
     #[should_panic(expected = "Market cannot be resolved before its expiration date")]
     fn test_resolve_before_expiry() {
         let (env, client, _, creator, token_client, _) = setup_test();
-        let id = client.create_market(&creator, &String::from_str(&env, "Q"), &String::from_str(&env, "D"), &1000, &token_client.address);
+        let id = client.create_market(
+            &creator,
+            &String::from_str(&env, "Q"),
+            &String::from_str(&env, "D"),
+            &1000,
+            &token_client.address,
+        );
         client.resolve_market(&id, &true);
     }
 
@@ -520,15 +577,21 @@ mod tests {
         let env = Env::default();
         let contract_id = env.register_contract(None, PredictionMarketContract);
         let client = PredictionMarketContractClient::new(&env, &contract_id);
-        
+
         let creator = Address::generate(&env);
         let token_admin = Address::generate(&env);
         let token_address = env.register_stellar_asset_contract(token_admin.clone());
         let token_client = token::Client::new(&env, &token_address);
-        
+
         env.mock_all_auths();
-        let id = client.create_market(&creator, &String::from_str(&env, "Q"), &String::from_str(&env, "D"), &1000, &token_client.address);
-        
+        let id = client.create_market(
+            &creator,
+            &String::from_str(&env, "Q"),
+            &String::from_str(&env, "D"),
+            &1000,
+            &token_client.address,
+        );
+
         env.ledger().set(LedgerInfo {
             timestamp: 1001,
             protocol_version: 21,
@@ -538,7 +601,7 @@ mod tests {
             min_temp_entry_ttl: 0,
             min_persistent_entry_ttl: 0,
         });
-        
+
         // This should panic without creator signing/mock auths
         let env_no_auth = Env::default();
         let client_no_auth = PredictionMarketContractClient::new(&env_no_auth, &contract_id);
@@ -550,7 +613,13 @@ mod tests {
     fn test_claim_unresolved() {
         let (env, client, _, creator, token_client, _) = setup_test();
         let user = Address::generate(&env);
-        let id = client.create_market(&creator, &String::from_str(&env, "Q"), &String::from_str(&env, "D"), &1000, &token_client.address);
+        let id = client.create_market(
+            &creator,
+            &String::from_str(&env, "Q"),
+            &String::from_str(&env, "D"),
+            &1000,
+            &token_client.address,
+        );
         client.claim_reward(&id, &user);
     }
 
@@ -560,10 +629,16 @@ mod tests {
         let (env, client, _, creator, token_client, token_admin) = setup_test();
         let user = Address::generate(&env);
         token_admin.mint(&user, &1000);
-        
-        let id = client.create_market(&creator, &String::from_str(&env, "Q"), &String::from_str(&env, "D"), &1000, &token_client.address);
+
+        let id = client.create_market(
+            &creator,
+            &String::from_str(&env, "Q"),
+            &String::from_str(&env, "D"),
+            &1000,
+            &token_client.address,
+        );
         client.place_bet(&id, &user, &true, &100);
-        
+
         env.ledger().set(LedgerInfo {
             timestamp: 1001,
             protocol_version: 21,
@@ -574,7 +649,7 @@ mod tests {
             min_persistent_entry_ttl: 0,
         });
         client.resolve_market(&id, &true);
-        
+
         client.claim_reward(&id, &user.clone());
         client.claim_reward(&id, &user);
     }
@@ -582,18 +657,24 @@ mod tests {
     #[test]
     fn test_reward_distribution() {
         let (env, client, _, creator, token_client, token_admin) = setup_test();
-        
+
         let user_yes = Address::generate(&env);
         let user_no = Address::generate(&env);
-        
+
         token_admin.mint(&user_yes, &1000);
         token_admin.mint(&user_no, &1000);
-        
-        let id = client.create_market(&creator, &String::from_str(&env, "Q"), &String::from_str(&env, "D"), &1000, &token_client.address);
-        
+
+        let id = client.create_market(
+            &creator,
+            &String::from_str(&env, "Q"),
+            &String::from_str(&env, "D"),
+            &1000,
+            &token_client.address,
+        );
+
         client.place_bet(&id, &user_yes, &true, &300);
         client.place_bet(&id, &user_no, &false, &700);
-        
+
         env.ledger().set(LedgerInfo {
             timestamp: 1001,
             protocol_version: 21,
@@ -604,7 +685,7 @@ mod tests {
             min_persistent_entry_ttl: 0,
         });
         client.resolve_market(&id, &true);
-        
+
         client.claim_reward(&id, &user_yes.clone());
         assert_eq!(token_client.balance(&user_yes), 700 + 1000);
     }
@@ -612,29 +693,62 @@ mod tests {
     #[test]
     fn test_property_3_oracle_persisted() {
         let (env, client, _, creator, token_client, _) = setup_test();
-        
+
         let oracle1 = Address::generate(&env);
         let oracle2 = Address::generate(&env);
         let oracle3 = Address::generate(&env);
-        
+
         let asset1 = Symbol::new(&env, "XLM");
         let asset2 = Symbol::new(&env, "BTC");
         let asset3 = Symbol::new(&env, "ETH");
-        
-        let id1 = client.create_market_with_oracle(&creator, &String::from_str(&env, "Q1"), &String::from_str(&env, "D"), &1000, &token_client.address, &oracle1, &asset1, &500).unwrap();
-        let id2 = client.create_market_with_oracle(&creator, &String::from_str(&env, "Q2"), &String::from_str(&env, "D"), &1000, &token_client.address, &oracle2, &asset2, &60000).unwrap();
-        let id3 = client.create_market_with_oracle(&creator, &String::from_str(&env, "Q3"), &String::from_str(&env, "D"), &1000, &token_client.address, &oracle3, &asset3, &3500).unwrap();
-        
+
+        let id1 = client
+            .create_market_with_oracle(
+                &creator,
+                &String::from_str(&env, "Q1"),
+                &String::from_str(&env, "D"),
+                &1000,
+                &token_client.address,
+                &oracle1,
+                &asset1,
+                &500,
+            )
+            .unwrap();
+        let id2 = client
+            .create_market_with_oracle(
+                &creator,
+                &String::from_str(&env, "Q2"),
+                &String::from_str(&env, "D"),
+                &1000,
+                &token_client.address,
+                &oracle2,
+                &asset2,
+                &60000,
+            )
+            .unwrap();
+        let id3 = client
+            .create_market_with_oracle(
+                &creator,
+                &String::from_str(&env, "Q3"),
+                &String::from_str(&env, "D"),
+                &1000,
+                &token_client.address,
+                &oracle3,
+                &asset3,
+                &3500,
+            )
+            .unwrap();
+
         let m1 = client.get_market(&id1).unwrap();
         assert_eq!(m1.oracle_id, Some(oracle1));
         assert_eq!(m1.oracle_asset, Some(asset1));
         assert_eq!(m1.resolution_price_threshold, Some(500));
-        
+
         let m2 = client.get_market(&id2).unwrap();
         assert_eq!(m2.oracle_id, Some(oracle2));
         assert_eq!(m2.oracle_asset, Some(asset2));
         assert_eq!(m2.resolution_price_threshold, Some(60000));
-        
+
         let m3 = client.get_market(&id3).unwrap();
         assert_eq!(m3.oracle_id, Some(oracle3));
         assert_eq!(m3.oracle_asset, Some(asset3));
@@ -644,18 +758,29 @@ mod tests {
     #[test]
     fn test_property_4_auto_resolve_yes() {
         let (env, client, _, creator, token_client, _) = setup_test();
-        
+
         let oracle_id = env.register_contract(None, OracleContract);
         let oracle_client = oracle::OracleContractClient::new(&env, &oracle_id);
-        
+
         let admin = Address::generate(&env);
         oracle_client.init(&admin);
-        
+
         let asset = Symbol::new(&env, "XLM");
         oracle_client.set_price(&admin, &asset, &600);
-        
-        let id = client.create_market_with_oracle(&creator, &String::from_str(&env, "Q"), &String::from_str(&env, "D"), &1000, &token_client.address, &oracle_id, &asset, &500).unwrap();
-        
+
+        let id = client
+            .create_market_with_oracle(
+                &creator,
+                &String::from_str(&env, "Q"),
+                &String::from_str(&env, "D"),
+                &1000,
+                &token_client.address,
+                &oracle_id,
+                &asset,
+                &500,
+            )
+            .unwrap();
+
         env.ledger().set(LedgerInfo {
             timestamp: 1001,
             protocol_version: 21,
@@ -665,9 +790,9 @@ mod tests {
             min_temp_entry_ttl: 0,
             min_persistent_entry_ttl: 0,
         });
-        
+
         client.auto_resolve_market(&id).unwrap();
-        
+
         let market = client.get_market(&id).unwrap();
         assert!(market.resolved);
         assert_eq!(market.outcome, true);
@@ -676,18 +801,29 @@ mod tests {
     #[test]
     fn test_property_4_auto_resolve_no() {
         let (env, client, _, creator, token_client, _) = setup_test();
-        
+
         let oracle_id = env.register_contract(None, OracleContract);
         let oracle_client = oracle::OracleContractClient::new(&env, &oracle_id);
-        
+
         let admin = Address::generate(&env);
         oracle_client.init(&admin);
-        
+
         let asset = Symbol::new(&env, "XLM");
         oracle_client.set_price(&admin, &asset, &400);
-        
-        let id = client.create_market_with_oracle(&creator, &String::from_str(&env, "Q"), &String::from_str(&env, "D"), &1000, &token_client.address, &oracle_id, &asset, &500).unwrap();
-        
+
+        let id = client
+            .create_market_with_oracle(
+                &creator,
+                &String::from_str(&env, "Q"),
+                &String::from_str(&env, "D"),
+                &1000,
+                &token_client.address,
+                &oracle_id,
+                &asset,
+                &500,
+            )
+            .unwrap();
+
         env.ledger().set(LedgerInfo {
             timestamp: 1001,
             protocol_version: 21,
@@ -697,9 +833,9 @@ mod tests {
             min_temp_entry_ttl: 0,
             min_persistent_entry_ttl: 0,
         });
-        
+
         client.auto_resolve_market(&id).unwrap();
-        
+
         let market = client.get_market(&id).unwrap();
         assert!(market.resolved);
         assert_eq!(market.outcome, false);
@@ -710,17 +846,23 @@ mod tests {
         let (env, client, _, creator, token_client, token_admin) = setup_test();
         let user = Address::generate(&env);
         token_admin.mint(&user, &1000);
-        
-        let id = client.create_market(&creator, &String::from_str(&env, "Q"), &String::from_str(&env, "D"), &1000, &token_client.address);
+
+        let id = client.create_market(
+            &creator,
+            &String::from_str(&env, "Q"),
+            &String::from_str(&env, "D"),
+            &1000,
+            &token_client.address,
+        );
         let events = env.events().all();
         let last_event = events.last().unwrap();
         assert_eq!(last_event.1.len(), 2);
-        
+
         client.place_bet(&id, &user, &true, &100);
         let events = env.events().all();
         let last_event = events.last().unwrap();
         assert_eq!(last_event.1.len(), 2);
-        
+
         env.ledger().set(LedgerInfo {
             timestamp: 1001,
             protocol_version: 21,
@@ -734,11 +876,10 @@ mod tests {
         let events = env.events().all();
         let last_event = events.last().unwrap();
         assert_eq!(last_event.1.len(), 2);
-        
+
         client.claim_reward(&id, &user);
         let events = env.events().all();
         let last_event = events.last().unwrap();
         assert_eq!(last_event.1.len(), 2);
     }
 }
-

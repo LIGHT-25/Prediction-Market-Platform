@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES2020",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -23,5 +23,24 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "scripts/check_key.ts",
+    "scripts/check-sim.ts",
+    "scripts/debug-deploy.ts",
+    "scripts/deploy2.ts",
+    "scripts/deploy3.ts",
+    "scripts/deploy4.ts",
+    "scripts/check_contract.ts",
+    "scripts/check_wasm.ts",
+    "scripts/compute_hash.ts",
+    "scripts/decode_meta.ts",
+    "scripts/decode_meta_full.ts",
+    "scripts/decode_result.ts",
+    "scripts/inspect_tx.ts",
+    "scripts/instantiate_only.ts",
+    "scripts/test_call.ts",
+    "scripts/test_op.ts",
+    "scripts/check_durability.ts"
+  ]
 }

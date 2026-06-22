@@ -56,6 +56,22 @@ This submission upgrades the Level 1 & 2 prediction market into a **production-g
 
 ---
 
+## ✅ Level 3 Submission Checklist
+
+| # | Requirement | Status |
+|---|-------------|--------|
+| 1 | Public GitHub repository | ✅ [github.com/LIGHT-25/Prediction-Market-Platform](https://github.com/LIGHT-25/Prediction-Market-Platform) |
+| 2 | README with complete documentation | ✅ This file — architecture, setup, deploy, testing, API reference |
+| 3 | 10+ meaningful commits | ✅ 62 commits — feature, test, docs, CI/CD, refactor |
+| 4 | Live demo link | ✅ [stellar-predict.chatterjeerupak588.workers.dev](https://stellar-predict.chatterjeerupak588.workers.dev) |
+| 5 | Contract deployment address | ✅ `CDOTOFALVP7MIH35P3CK6I3W6PEZPO4K6DJJLU2XPCSALENFYRPCUVAD` (PredictionMarket) + `CBA32DFTDCK73LH2IHM2743XIT3K5V3SUH3EFRVNAZFZFLTGUB4DCXM6` (Oracle) |
+| 6 | Transaction hash for contract interaction | ✅ 4 TX hashes — WASM upload & instantiation for both contracts ([view](#-transaction-hashes)) |
+| 7 | Screenshot: Mobile responsive UI | ✅ [docs/screenshots/](docs/screenshots/) — 7 screenshots including mobile-responsive views |
+| 8 | Screenshot: CI/CD pipeline running | ✅ [CI passing on GitHub Actions](https://github.com/LIGHT-25/Prediction-Market-Platform/actions) |
+| 9 | Screenshot: Test output with 3+ passing tests | ✅ 45 tests passing across 5 suites ([view](#-testing)) |
+
+---
+
 ## 🏗️ Architecture
 
 ```mermaid

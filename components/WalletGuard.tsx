@@ -43,7 +43,7 @@ export function WalletGuard({
         <h3 className="font-semibold text-amber-400 mb-1">Network Mismatch</h3>
         <p className="text-sm text-muted-foreground mb-2">
           Your wallet is connected to <strong>{network}</strong>, but this app
-          requires <strong>{NETWORK}</strong>.
+           requires <strong>{NETWORK_PASSPHRASE}</strong>.
         </p>
         <p className="text-xs text-muted-foreground">
           Please switch networks in your Freighter wallet settings.

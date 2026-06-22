@@ -3,10 +3,11 @@ import { act } from "@testing-library/react";
 import { useEventStore } from "@/lib/eventStore";
 import type { ContractEvent } from "@/types";
 
-const mockEvent = (id: string, ledger = 1000): ContractEvent => ({
+const mockEvent = (id: string, ledgerParam = 1000): ContractEvent => ({
   id,
-  ledger,
-  type: "create_market",
+  ledger: ledgerParam,
+  type: "MarketCreated",
+  timestamp: ledgerParam,
   data: { marketId: 1 },
 });
 
