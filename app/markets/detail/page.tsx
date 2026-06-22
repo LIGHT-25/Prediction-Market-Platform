@@ -89,6 +89,11 @@ function MarketDetailContent() {
       toast("Please connect your wallet", "error");
       return;
     }
+    // Task 10.4: guard — reject bet if market has expired
+    if (isExpired) {
+      toast("This market has expired. Betting is closed.", "error");
+      return;
+    }
     const amount = parseFloat(betAmount);
     if (isNaN(amount) || amount <= 0) {
       toast("Please enter a valid amount", "error");
@@ -122,6 +127,14 @@ function MarketDetailContent() {
 
   const isCreator = address === market.creator;
   const poolXLM = (totalPool / 10_000_000).toFixed(2);
+
+  // Inline spinner element for button states
+  const BtnSpinner = ({ color = "white" }: { color?: string }) => (
+    <span
+      style={{ borderTopColor: color }}
+      className="inline-block w-3.5 h-3.5 border-2 border-white/20 rounded-full animate-spin"
+    />
+  );
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
@@ -168,7 +181,7 @@ function MarketDetailContent() {
         </div>
 
         {/* Pool Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div className="rounded-lg bg-muted/50 p-3 text-center">
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
               Total Pool
@@ -255,46 +268,60 @@ function MarketDetailContent() {
         </section>
       )}
 
-      {/* Actions */}
+      {/* Actions — Bet or Expired notice (Task 10.4) */}
       {!market.resolved && (
         <section className="rounded-xl border border-border/50 bg-card p-6 mb-6">
-          <h2 className="font-semibold mb-4">Place a Bet</h2>
-          <div className="mb-4">
-            <label className="text-sm text-muted-foreground mb-1.5 block">
-              Amount (XLM)
-            </label>
-            <input
-              type="number"
-              value={betAmount}
-              onChange={(e) => setBetAmount(e.target.value)}
-              min="1"
-              step="1"
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => handlePlaceBet(true)}
-              disabled={placeBet.isPending || !isConnected}
-              className="py-3 rounded-xl bg-emerald-500/20 text-emerald-400 font-medium border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
-            >
-              {placeBet.isPending ? "Processing..." : "Bet YES"}
-            </button>
-            <button
-              onClick={() => handlePlaceBet(false)}
-              disabled={placeBet.isPending || !isConnected}
-              className="py-3 rounded-xl bg-red-500/20 text-red-400 font-medium border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-50"
-            >
-              {placeBet.isPending ? "Processing..." : "Bet NO"}
-            </button>
-          </div>
-          {!isConnected && (
-            <button
-              onClick={connect}
-              className="w-full mt-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-            >
-              <Wallet className="w-4 h-4 inline mr-1.5" /> Connect Freighter to Bet
-            </button>
+          {isExpired ? (
+            <div className="flex flex-col items-center gap-3 py-2 text-center">
+              <AlertTriangle className="w-8 h-8 text-amber-400" />
+              <div>
+                <p className="font-semibold text-amber-400">Market Expired</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  This market has expired. Betting is closed — wait for the creator to resolve it.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <h2 className="font-semibold mb-4">Place a Bet</h2>
+              <div className="mb-4">
+                <label className="text-sm text-muted-foreground mb-1.5 block">
+                  Amount (XLM)
+                </label>
+                <input
+                  type="number"
+                  value={betAmount}
+                  onChange={(e) => setBetAmount(e.target.value)}
+                  min="1"
+                  step="1"
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => handlePlaceBet(true)}
+                  disabled={placeBet.isPending || !isConnected}
+                  className="py-3 rounded-xl bg-emerald-500/20 text-emerald-400 font-medium border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {placeBet.isPending ? <><BtnSpinner color="#34d399" /> Processing...</> : "Bet YES"}
+                </button>
+                <button
+                  onClick={() => handlePlaceBet(false)}
+                  disabled={placeBet.isPending || !isConnected}
+                  className="py-3 rounded-xl bg-red-500/20 text-red-400 font-medium border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {placeBet.isPending ? <><BtnSpinner color="#f87171" /> Processing...</> : "Bet NO"}
+                </button>
+              </div>
+              {!isConnected && (
+                <button
+                  onClick={connect}
+                  className="w-full mt-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                >
+                  <Wallet className="w-4 h-4 inline mr-1.5" /> Connect Freighter to Bet
+                </button>
+              )}
+            </>
           )}
         </section>
       )}
@@ -310,22 +337,22 @@ function MarketDetailContent() {
             <button
               onClick={() => handleResolve(true)}
               disabled={resolveMarket.isPending}
-              className="py-3 rounded-xl bg-emerald-500/20 text-emerald-400 font-medium border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
+              className="py-3 rounded-xl bg-emerald-500/20 text-emerald-400 font-medium border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {resolveMarket.isPending ? "Processing..." : "Resolve YES ✓"}
+              {resolveMarket.isPending ? <><BtnSpinner color="#34d399" /> Processing...</> : "Resolve YES ✓"}
             </button>
             <button
               onClick={() => handleResolve(false)}
               disabled={resolveMarket.isPending}
-              className="py-3 rounded-xl bg-red-500/20 text-red-400 font-medium border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+              className="py-3 rounded-xl bg-red-500/20 text-red-400 font-medium border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {resolveMarket.isPending ? "Processing..." : "Resolve NO ✗"}
+              {resolveMarket.isPending ? <><BtnSpinner color="#f87171" /> Processing...</> : "Resolve NO ✗"}
             </button>
           </div>
         </section>
       )}
 
-      {/* Claim Reward */}
+      {/* Claim Reward (Task 10.3) */}
       {market.resolved && (
         <section className="rounded-xl border border-border/50 bg-card p-6 mb-6">
           <h2 className="font-semibold mb-2 flex items-center gap-2">
@@ -336,18 +363,20 @@ function MarketDetailContent() {
               ? "YES won this market. Claim your reward if you held YES shares."
               : "NO won this market. Claim your reward if you held NO shares."}
           </p>
-          <button
-            onClick={handleClaim}
-            disabled={claimReward.isPending || !isConnected || userPosition?.claimed}
-            className="w-full py-3 rounded-xl bg-amber-500/20 text-amber-400 font-medium border border-amber-500/30 hover:bg-amber-500/30 transition-colors disabled:opacity-50"
-          >
-            {claimReward.isPending
-              ? "Processing..."
-              : userPosition?.claimed
-              ? "Already Claimed"
-              : "Claim Reward"}
-          </button>
-          {!isConnected && (
+          {userPosition?.claimed ? (
+            <div className="w-full py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center gap-2 text-emerald-400 font-medium cursor-default">
+              <CheckCircle2 className="w-4 h-4" /> Already Claimed
+            </div>
+          ) : (
+            <button
+              onClick={handleClaim}
+              disabled={claimReward.isPending || !isConnected}
+              className="w-full py-3 rounded-xl bg-amber-500/20 text-amber-400 font-medium border border-amber-500/30 hover:bg-amber-500/30 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {claimReward.isPending ? <><BtnSpinner color="#fbbf24" /> Processing...</> : "Claim Reward"}
+            </button>
+          )}
+          {!isConnected && !userPosition?.claimed && (
             <button
               onClick={connect}
               className="w-full mt-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
@@ -362,14 +391,12 @@ function MarketDetailContent() {
       <section className="rounded-xl border border-border/50 bg-card p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-          <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Users className="w-3.5 h-3.5" />
               <span>{market.participants} participant{market.participants !== 1 ? "s" : ""}</span>
             </div>
-          </div>
-          <div className="p-2 rounded-lg bg-muted">
-            <User className="w-4 h-4 text-muted-foreground" />
+            <div className="p-2 rounded-lg bg-muted">
+              <User className="w-4 h-4 text-muted-foreground" />
             </div>
             <div>
               <p className="text-sm font-medium">Created by</p>
