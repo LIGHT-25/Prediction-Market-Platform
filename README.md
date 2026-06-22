@@ -39,11 +39,13 @@ This DApp enables users to create and participate in YES/NO prediction markets o
 
 ### 5. Mobile Responsive UI
 *Fully responsive interface optimized for mobile layouts.*
-![Mobile Responsive](docs/screenshots/mobile_view.png)
+<img width="256" height="551" alt="image" src="https://github.com/user-attachments/assets/ea2f0e2a-fff3-45cd-8446-fae51f843fd2" />
+
 
 ### 6. CI/CD Pipeline
 *GitHub Actions workflow verifying Soroban smart contract checks, TypeScript type-checks, test suites, and production builds.*
-![CI/CD Pipeline](docs/screenshots/ci-cd.png)
+<img width="1365" height="728" alt="image" src="https://github.com/user-attachments/assets/873b5ec3-2c52-46bf-a99a-188d05c3f984" />
+
 
 ### 7. Stellar Expert — On-Chain Verification
 *Stellar Expert explorer showing deployed contract and transaction traces on the Stellar Testnet.*
