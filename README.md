@@ -49,7 +49,8 @@ This DApp enables users to create and participate in YES/NO prediction markets o
 
 ### 7. Test Suite — 45/45 Passing
 *All 45 Vitest tests passing across 5 suites: stores, utils, event polling, property-based, and ErrorBoundary.*
-![Test Output](docs/screenshots/test-output.png)
+<img width="651" height="388" alt="image" src="https://github.com/user-attachments/assets/9bbf69e3-4b4b-4d42-8001-1819998741e9" />
+
 
 ### 8. Stellar Expert — On-Chain Verification
 *Stellar Expert explorer showing deployed contract and transaction traces on the Stellar Testnet.*
