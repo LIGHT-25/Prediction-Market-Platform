@@ -43,3 +43,7 @@ next-env.d.ts
 
 # cargo target
 /contracts/target/
+
+# IDE / tool internal folders
+/.kiro/
+/coldStart/
