@@ -8,19 +8,8 @@ import {
 } from "./wallet";
 import { NETWORK_PASSPHRASE } from "./config";
 import { Horizon } from "@stellar/stellar-sdk";
+import type { WalletState } from "@/types";
 
-interface WalletState {
-  address: string | null;
-  isConnected: boolean;
-  network: string | null;
-  balance: string;
-  isLoading: boolean;
-  error: string | null;
-  connect: () => Promise<void>;
-  disconnect: () => Promise<void>;
-  fetchBalance: () => Promise<void>;
-  checkConnection: () => Promise<void>;
-}
 
 export const useWalletStore = create<WalletState>((set, get) => ({
   address: null,
