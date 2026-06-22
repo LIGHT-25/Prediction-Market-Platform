@@ -794,7 +794,7 @@ mod tests {
 
         let market = client.get_market(&id).unwrap();
         assert!(market.resolved);
-        assert_eq!(market.outcome, true);
+        assert!(market.outcome);
     }
 
     #[test]
@@ -837,7 +837,7 @@ mod tests {
 
         let market = client.get_market(&id).unwrap();
         assert!(market.resolved);
-        assert_eq!(market.outcome, false);
+        assert!(!market.outcome);
     }
 
     #[test]
