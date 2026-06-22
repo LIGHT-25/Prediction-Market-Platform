@@ -135,9 +135,15 @@ export function TxModal({ isOpen, onClose, transactions }: TxModalProps) {
                         <span>{new Date(tx.timestamp).toLocaleTimeString()}</span>
                       </div>
                       {tx.hash && (
-                        <p className="text-xs font-mono text-muted-foreground mt-1 truncate">
-                          {tx.hash}
-                        </p>
+                        <a
+                          href={`${EXPLORER_URL}/tx/${tx.hash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-mono text-primary hover:underline mt-1 block truncate"
+                          title={tx.hash}
+                        >
+                          {tx.hash.slice(0, 16)}...{tx.hash.slice(-8)}
+                        </a>
                       )}
                       {tx.error && (
                         <p className="text-xs text-red-400 mt-1">{tx.error}</p>
