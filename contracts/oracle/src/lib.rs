@@ -53,7 +53,7 @@ impl OracleContract {
 
         env.storage()
             .persistent()
-            .set(&DataKey::Price(asset.clone()), &price);
+            .set(&DataKey::Price(asset), &price);
         Ok(())
     }
 

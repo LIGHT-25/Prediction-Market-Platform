@@ -82,7 +82,7 @@ impl PredictionMarketContract {
         let market = Market {
             id: count,
             question: question.clone(),
-            description: description.clone(),
+            description,
             creator: creator.clone(),
             expiration_date,
             total_yes_shares: 0,
@@ -100,7 +100,6 @@ impl PredictionMarketContract {
             .instance()
             .set(&DataKey::Market(count), &market);
 
-        // Updated event structure: topic tuple of length 2, creator moved to data
         env.events().publish(
             (Symbol::new(&env, "MarketCreated"), count),
             (creator, question, expiration_date, token),
@@ -138,7 +137,7 @@ impl PredictionMarketContract {
         let market = Market {
             id: count,
             question: question.clone(),
-            description: description.clone(),
+            description,
             creator: creator.clone(),
             expiration_date,
             total_yes_shares: 0,
