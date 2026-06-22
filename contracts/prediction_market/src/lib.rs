@@ -1,4 +1,5 @@
 #![no_std]
+#![allow(clippy::too_many_arguments)]
 use soroban_sdk::{
     contract, contracterror, contractimpl, contracttype, token, Address, Env, String, Symbol, Vec,
 };
@@ -396,9 +397,32 @@ impl PredictionMarketContract {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use oracle::OracleContract;
-    use soroban_sdk::testutils::{Address as _, Ledger, LedgerInfo};
-    use soroban_sdk::{token, Address, Env, String, Symbol};
+    use soroban_sdk::testutils::{Address as _, Events, Ledger, LedgerInfo};
+    use soroban_sdk::{contract, contractimpl, token, Address, Env, String, Symbol};
+
+    // Mock oracle contract for testing auto-resolve functionality
+    #[contract]
+    pub struct TestOracle;
+
+    #[contractimpl]
+    impl TestOracle {
+        pub fn init(env: Env, admin: Address) {
+            env.storage().instance().set(&Symbol::new(&env, "admin"), &admin);
+        }
+
+        pub fn set_price(env: Env, caller: Address, asset: Symbol, price: i128) {
+            caller.require_auth();
+            let admin: Address = env.storage().instance().get(&Symbol::new(&env, "admin")).unwrap();
+            if caller != admin {
+                panic!("unauthorized");
+            }
+            env.storage().persistent().set(&asset, &price);
+        }
+
+        pub fn get_price(env: Env, asset: Symbol) -> i128 {
+            env.storage().persistent().get(&asset).unwrap_or(0)
+        }
+    }
 
     fn setup_test<'a>() -> (
         Env,
@@ -406,7 +430,7 @@ mod tests {
         Address,
         Address,
         token::Client<'a>,
-        token::StellarAssetContractClient<'a>,
+        token::StellarAssetClient<'a>,
     ) {
         let env = Env::default();
         env.mock_all_auths();
@@ -416,9 +440,10 @@ mod tests {
 
         let creator = Address::generate(&env);
         let token_admin = Address::generate(&env);
-        let token_address = env.register_stellar_asset_contract(token_admin.clone());
+        let token_contract = env.register_stellar_asset_contract_v2(token_admin.clone());
+        let token_address = token_contract.address();
         let token_client = token::Client::new(&env, &token_address);
-        let token_admin_client = token::StellarAssetContractClient::new(&env, &token_address);
+        let token_admin_client = token::StellarAssetClient::new(&env, &token_address);
 
         (
             env,
@@ -505,6 +530,7 @@ mod tests {
             base_reserve: 0,
             min_temp_entry_ttl: 0,
             min_persistent_entry_ttl: 0,
+            max_entry_ttl: 0,
         });
 
         client.place_bet(&id, &user, &true, &100);
@@ -535,6 +561,7 @@ mod tests {
             base_reserve: 0,
             min_temp_entry_ttl: 0,
             min_persistent_entry_ttl: 0,
+            max_entry_ttl: 0,
         });
         client.resolve_market(&id, &true);
 
@@ -579,7 +606,8 @@ mod tests {
 
         let creator = Address::generate(&env);
         let token_admin = Address::generate(&env);
-        let token_address = env.register_stellar_asset_contract(token_admin.clone());
+        let token_contract = env.register_stellar_asset_contract_v2(token_admin.clone());
+        let token_address = token_contract.address();
         let token_client = token::Client::new(&env, &token_address);
 
         env.mock_all_auths();
@@ -599,6 +627,7 @@ mod tests {
             base_reserve: 0,
             min_temp_entry_ttl: 0,
             min_persistent_entry_ttl: 0,
+            max_entry_ttl: 0,
         });
 
         // This should panic without creator signing/mock auths
@@ -646,6 +675,7 @@ mod tests {
             base_reserve: 0,
             min_temp_entry_ttl: 0,
             min_persistent_entry_ttl: 0,
+            max_entry_ttl: 0,
         });
         client.resolve_market(&id, &true);
 
@@ -682,6 +712,7 @@ mod tests {
             base_reserve: 0,
             min_temp_entry_ttl: 0,
             min_persistent_entry_ttl: 0,
+            max_entry_ttl: 0,
         });
         client.resolve_market(&id, &true);
 
@@ -711,8 +742,7 @@ mod tests {
                 &oracle1,
                 &asset1,
                 &500,
-            )
-            .unwrap();
+            );
         let id2 = client
             .create_market_with_oracle(
                 &creator,
@@ -723,8 +753,7 @@ mod tests {
                 &oracle2,
                 &asset2,
                 &60000,
-            )
-            .unwrap();
+            );
         let id3 = client
             .create_market_with_oracle(
                 &creator,
@@ -735,8 +764,7 @@ mod tests {
                 &oracle3,
                 &asset3,
                 &3500,
-            )
-            .unwrap();
+            );
 
         let m1 = client.get_market(&id1).unwrap();
         assert_eq!(m1.oracle_id, Some(oracle1));
@@ -758,8 +786,8 @@ mod tests {
     fn test_property_4_auto_resolve_yes() {
         let (env, client, _, creator, token_client, _) = setup_test();
 
-        let oracle_id = env.register_contract(None, OracleContract);
-        let oracle_client = oracle::OracleContractClient::new(&env, &oracle_id);
+        let oracle_id = env.register_contract(None, TestOracle);
+        let oracle_client = TestOracleClient::new(&env, &oracle_id);
 
         let admin = Address::generate(&env);
         oracle_client.init(&admin);
@@ -777,8 +805,7 @@ mod tests {
                 &oracle_id,
                 &asset,
                 &500,
-            )
-            .unwrap();
+            );
 
         env.ledger().set(LedgerInfo {
             timestamp: 1001,
@@ -788,9 +815,10 @@ mod tests {
             base_reserve: 0,
             min_temp_entry_ttl: 0,
             min_persistent_entry_ttl: 0,
+            max_entry_ttl: 0,
         });
 
-        client.auto_resolve_market(&id).unwrap();
+        client.auto_resolve_market(&id);
 
         let market = client.get_market(&id).unwrap();
         assert!(market.resolved);
@@ -801,8 +829,8 @@ mod tests {
     fn test_property_4_auto_resolve_no() {
         let (env, client, _, creator, token_client, _) = setup_test();
 
-        let oracle_id = env.register_contract(None, OracleContract);
-        let oracle_client = oracle::OracleContractClient::new(&env, &oracle_id);
+        let oracle_id = env.register_contract(None, TestOracle);
+        let oracle_client = TestOracleClient::new(&env, &oracle_id);
 
         let admin = Address::generate(&env);
         oracle_client.init(&admin);
@@ -820,8 +848,7 @@ mod tests {
                 &oracle_id,
                 &asset,
                 &500,
-            )
-            .unwrap();
+            );
 
         env.ledger().set(LedgerInfo {
             timestamp: 1001,
@@ -831,9 +858,10 @@ mod tests {
             base_reserve: 0,
             min_temp_entry_ttl: 0,
             min_persistent_entry_ttl: 0,
+            max_entry_ttl: 0,
         });
 
-        client.auto_resolve_market(&id).unwrap();
+        client.auto_resolve_market(&id);
 
         let market = client.get_market(&id).unwrap();
         assert!(market.resolved);
@@ -870,6 +898,7 @@ mod tests {
             base_reserve: 0,
             min_temp_entry_ttl: 0,
             min_persistent_entry_ttl: 0,
+            max_entry_ttl: 0,
         });
         client.resolve_market(&id, &true);
         let events = env.events().all();
