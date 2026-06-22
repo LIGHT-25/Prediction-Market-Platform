@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import Providers from "@/components/Providers";
 import { ToastProvider } from "@/components/Toast";
 import Navbar from "@/components/Navbar";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -42,7 +43,9 @@ export default function RootLayout({
           <ToastProvider>
             <div className="min-h-screen flex flex-col">
               <Navbar />
-              <main className="flex-1">{children}</main>
+              <ErrorBoundary>
+                <main className="flex-1">{children}</main>
+              </ErrorBoundary>
               <footer className="border-t border-border/50 py-6">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
                   <p>© 2026 StellarPredict. Built on Stellar Testnet.</p>
