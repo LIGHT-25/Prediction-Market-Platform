@@ -5,6 +5,9 @@ export const CONTRACT_ID =
   process.env.NEXT_PUBLIC_CONTRACT_ID ||
   "CDOTOFALVP7MIH35P3CK6I3W6PEZPO4K6DJJLU2XPCSALENFYRPCUVAD";
 
+export const ORACLE_CONTRACT_ID = process.env.NEXT_PUBLIC_ORACLE_CONTRACT_ID || "";
+
 // Standard XLM Token Contract Address on Stellar Testnet
 export const NATIVE_TOKEN_ADDRESS = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
 export const EXPLORER_URL = "https://stellar.expert/explorer/testnet";
+
